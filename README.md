@@ -2,6 +2,8 @@
 
 Data-driven Phaser 3 settings system: schema, storage adapter, validation, and modal UI (toggle, slider, select, segmented, action, section).
 
+![Image of Settings Menu in a Game](set-phaser-on-settings.png)
+
 ## Install
 
 **From npm** (when published):
