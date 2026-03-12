@@ -10,10 +10,10 @@ Data-driven Phaser 3 settings system: schema, storage adapter, validation, and m
 npm install phaser-settings
 ```
 
-**From GitHub** (this repo):
+**From GitHub** (this repo). Prefer **HTTPS** so npm does not use SSH (avoids auth and Windows fork issues):
 
 ```bash
-npm install github:Unic0rn0ver10ad/Phaser-Settings
+npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git
 ```
 
 Or in `package.json`:
@@ -21,7 +21,7 @@ Or in `package.json`:
 ```json
 "dependencies": {
   "phaser": "^3.60.0",
-  "phaser-settings": "github:Unic0rn0ver10ad/Phaser-Settings"
+  "phaser-settings": "https://github.com/Unic0rn0ver10ad/Phaser-Settings.git"
 }
 ```
 

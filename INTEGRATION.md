@@ -6,10 +6,10 @@ This guide walks through installing and configuring **phaser-settings** from Git
 
 ## 1. Install from GitHub
 
-In your game’s repo root:
+In your game’s repo root. Use the **HTTPS** URL so npm does not try SSH (avoids “Could not read from remote” and Windows fork errors):
 
 ```bash
-npm install github:Unic0rn0ver10ad/Phaser-Settings
+npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git
 ```
 
 Or add to `package.json` and run `npm install`:
@@ -18,7 +18,7 @@ Or add to `package.json` and run `npm install`:
 {
   "dependencies": {
     "phaser": "^3.60.0",
-    "phaser-settings": "github:Unic0rn0ver10ad/Phaser-Settings"
+    "phaser-settings": "https://github.com/Unic0rn0ver10ad/Phaser-Settings.git"
   }
 }
 ```
@@ -260,7 +260,7 @@ Register these once at startup (e.g. in your boot or main init), after `Settings
 
 | Step | Action |
 |------|--------|
-| 1 | `npm install github:Unic0rn0ver10ad/Phaser-Settings` |
+| 1 | `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git` |
 | 2 | Build the package (`cd node_modules/phaser-settings && npm install && npm run build`) or use a postinstall script |
 | 3 | Implement `SettingsStorageAdapter` (load/save) |
 | 4 | Define `SettingsSchema` (categories + definitions) |
@@ -285,3 +285,6 @@ Register these once at startup (e.g. in your boot or main init), after `Settings
 
 - **Types not found**  
   Ensure your project has TypeScript and that `phaser-settings` is in `dependencies` (or `devDependencies`). The package ships `dist/*.d.ts`; building the package generates these if you installed from GitHub.
+
+- **"Could not read from remote repository" or Windows dofork/exit 0xC0000142**  
+  npm is trying to clone via SSH. Use the **HTTPS** URL instead: `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git` (and in `package.json` use `"https://github.com/Unic0rn0ver10ad/Phaser-Settings.git"`).
