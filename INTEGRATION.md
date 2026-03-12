@@ -6,22 +6,37 @@ This guide walks through installing and configuring **phaser-settings** from Git
 
 ## 1. Install from GitHub
 
-In your game’s repo root. Use the **HTTPS** URL so npm does not try SSH (avoids “Could not read from remote” and Windows fork errors):
+The GitHub repo must have the package files pushed (at least one commit on `main`). If the repo is empty, install will fail.
+
+### Option A: Install via tarball (no Git — best on Windows)
+
+This avoids Git and SSH entirely, so it sidesteps “Could not read from remote” and Windows dofork (0xC0000142) errors:
+
+```bash
+npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings/archive/refs/heads/main.tar.gz
+```
+
+In `package.json`:
+
+```json
+"phaser-settings": "https://github.com/Unic0rn0ver10ad/Phaser-Settings/archive/refs/heads/main.tar.gz"
+```
+
+If the default branch is `master` instead of `main`, use `main` in the URL or replace with `master`.
+
+### Option B: Install via Git (HTTPS)
 
 ```bash
 npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git
 ```
 
-Or add to `package.json` and run `npm install`:
+If you still see `ssh://git@github.com/...` in errors, Git is rewriting the URL. Force HTTPS for GitHub (run once):
 
-```json
-{
-  "dependencies": {
-    "phaser": "^3.60.0",
-    "phaser-settings": "https://github.com/Unic0rn0ver10ad/Phaser-Settings.git"
-  }
-}
+```bash
+git config --global url."https://github.com/".insteadOf ssh://git@github.com/
 ```
+
+Then run the `npm install` again.
 
 Your project must already depend on **phaser** (peer dependency ^3.60.0).
 
@@ -133,7 +148,7 @@ const definitions: SettingDefinition[] = [
   {
     type: 'action',
     id: 'restoreDefaults',
-    label: '',
+    label: 'Restore defaults', // optional for actions: can be '' and the UI uses actionLabel
     category: 'general',
     default: false,
     actionLabel: 'Restore defaults',
@@ -169,6 +184,8 @@ Do not call `create()` more than once. Use `SettingsManager.getInstance()` every
 
 ## 6. Register the settings scene and add it to the game
 
+### Option A: Scene in the initial game config
+
 When creating your Phaser game config, create the scene class and add it to the `scene` array:
 
 ```ts
@@ -200,6 +217,28 @@ const config = {
 ```
 
 The modal is **launched** on top of other scenes; it does not replace them. Use `sceneKey: 'SettingsScene'` (default) or pass a custom `sceneKey` in the options if you want a different key.
+
+### Option B: Runtime registration (if "Scene key not found" happens)
+
+In some setups (e.g. Vite + ES modules), the scene from the config array may not be registered under the expected key. If you get **Scene key not found: SettingsScene** when launching:
+
+1. **Bootstrap in a dedicated module** (e.g. `settings/settingsScene.ts`) that creates the adapter, calls `SettingsManager.create()`, calls `createSettingsModalScene(...)`, and exports the scene key and a getter for the scene class.
+2. **Import that module before creating the game** in your main entry (e.g. `main.ts`: `import './game/settings/settingsScene'` before `new Phaser.Game(config)`).
+3. **Omit the settings scene from the initial `scene` array** in the game config.
+4. **In BootScene.create()**, register the scene manually:
+
+   ```ts
+   import { SETTINGS_SCENE_KEY, getSettingsSceneClass } from '../settings/settingsScene'
+
+   create() {
+     if (!this.scene.get(SETTINGS_SCENE_KEY)) {
+       this.scene.add(SETTINGS_SCENE_KEY, getSettingsSceneClass(), false)
+     }
+     // ... rest of boot
+   }
+   ```
+
+Then `this.scene.launch('SettingsScene')` will work. See [docs/IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md#2-scene-key-not-found-settingsscene) for full details.
 
 ---
 
@@ -260,7 +299,7 @@ Register these once at startup (e.g. in your boot or main init), after `Settings
 
 | Step | Action |
 |------|--------|
-| 1 | `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git` |
+| 1 | `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings/archive/refs/heads/main.tar.gz` (or `.git` if Git/SSH works) |
 | 2 | Build the package (`cd node_modules/phaser-settings && npm install && npm run build`) or use a postinstall script |
 | 3 | Implement `SettingsStorageAdapter` (load/save) |
 | 4 | Define `SettingsSchema` (categories + definitions) |
@@ -287,4 +326,7 @@ Register these once at startup (e.g. in your boot or main init), after `Settings
   Ensure your project has TypeScript and that `phaser-settings` is in `dependencies` (or `devDependencies`). The package ships `dist/*.d.ts`; building the package generates these if you installed from GitHub.
 
 - **"Could not read from remote repository" or Windows dofork/exit 0xC0000142**  
-  npm is trying to clone via SSH. Use the **HTTPS** URL instead: `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git` (and in `package.json` use `"https://github.com/Unic0rn0ver10ad/Phaser-Settings.git"`).
+  npm is using Git and Git is using SSH. Either: (1) Install from the **tarball** so Git is not used: `npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings/archive/refs/heads/main.tar.gz`. Or (2) force Git to use HTTPS: `git config --global url."https://github.com/".insteadOf ssh://git@github.com/` then run `npm install` again.
+
+- **Repo empty / no content**  
+  If the GitHub repo has no commits yet, push the package contents first (see REPO_SETUP.md in the phaser-settings repo). Install only works once the repo has at least one commit (e.g. on `main`).
