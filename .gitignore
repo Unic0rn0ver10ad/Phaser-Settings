@@ -1,0 +1,13 @@
+# Dependencies and build
+node_modules/
+dist/
+
+# Test / IDE
+*.log
+.DS_Store
+.vscode/
+.idea/
+coverage/
+
+# Vitest
+node_modules/.vite/
