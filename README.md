@@ -4,11 +4,30 @@ Data-driven Phaser 3 settings system: schema, storage adapter, validation, and m
 
 ## Install
 
+**From npm** (when published):
+
 ```bash
 npm install phaser-settings
 ```
 
-Peer dependency: `phaser` ^3.60.0.
+**From GitHub** (this repo):
+
+```bash
+npm install github:Unic0rn0ver10ad/Phaser-Settings
+```
+
+Or in `package.json`:
+
+```json
+"dependencies": {
+  "phaser": "^3.60.0",
+  "phaser-settings": "github:Unic0rn0ver10ad/Phaser-Settings"
+}
+```
+
+Then run `npm install`. The package must be built before use (see [Integration guide](docs/INTEGRATION.md#build)).
+
+**Peer dependency:** `phaser` ^3.60.0.
 
 ## Quick start
 
@@ -63,7 +82,8 @@ this.scene.launch('SettingsScene');
 2. Read the value in game code via `SettingsManager.getInstance().get('id')` or `.getOrDefault('id')`.
 3. Optional: register an apply callback with `settings.onApplySetting('id', (id, value) => { ... })` for immediate effects.
 
-See [docs/API.md](docs/API.md) for lifecycle, storage contract, migrations, and scene options.
+- **Full integration guide** (install from GitHub, adapter, schema, bootstrap, scene registration): [docs/INTEGRATION.md](docs/INTEGRATION.md)  
+- **API and contract**: [docs/API.md](docs/API.md) (lifecycle, storage, migrations, scene options).
 
 ## API
 
