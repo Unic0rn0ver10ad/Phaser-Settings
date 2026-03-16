@@ -43,6 +43,8 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
   const opts = options;
   const sceneKey = opts.sceneKey ?? 'SettingsScene';
 
+  const DRAG_THRESHOLD_PX = 4;
+
   class SettingsModalScene extends Phaser.Scene {
     private settingsRows: RenderedRow[] = [];
     private settingsRowYs: number[] = [];
@@ -51,6 +53,8 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
     private scrollY = 0;
     private maxScroll = 0;
     private viewportHeight = 0;
+    /** Touch/drag scroll: start Y, start scrollY, pointer id, and whether we actually scrolled (to avoid stealing taps). */
+    private scrollDrag: { startY: number; startScrollY: number; pointerId: number; didDrag: boolean } | null = null;
 
     constructor() {
       super({ key: sceneKey });
@@ -141,6 +145,7 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       this.settingsRowYs = rowYs;
       this.settingsListX = contentLeft + SCREEN_PADDING;
       this.settingsListYBase = listAreaTop + 8;
+      this.settingsListWidth = listWidth;
       this.maxScroll = Math.max(0, totalHeight - this.viewportHeight);
 
       const maskGraphics = this.add.graphics().setVisible(false);
@@ -158,6 +163,59 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         this.applyScroll(dy);
       });
 
+      // Touch/drag scrolling: zone over list area so touch drag scrolls the list
+      const scrollZoneCenterX = this.settingsListX + listWidth / 2;
+      const scrollZoneCenterY = this.settingsListYBase + this.viewportHeight / 2;
+      const scrollZone = this.add
+        .zone(scrollZoneCenterX, scrollZoneCenterY, listWidth, this.viewportHeight)
+        .setInteractive(new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight), Phaser.Geom.Rectangle.Contains);
+      scrollZone.setDepth(2.5);
+
+      scrollZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        this.scrollDrag = {
+          startY: pointer.y,
+          startScrollY: this.scrollY,
+          pointerId: pointer.id,
+          didDrag: false,
+        };
+      });
+
+      this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+        if (!this.scrollDrag || pointer.id !== this.scrollDrag.pointerId) return;
+        const deltaY = this.scrollDrag.startY - pointer.y;
+        if (Math.abs(deltaY) > DRAG_THRESHOLD_PX) this.scrollDrag.didDrag = true;
+        const newScrollY = Phaser.Math.Clamp(
+          this.scrollDrag.startScrollY + deltaY,
+          0,
+          this.maxScroll
+        );
+        this.setScrollY(newScrollY);
+        this.scrollDrag.startY = pointer.y;
+        this.scrollDrag.startScrollY = this.scrollY;
+      });
+
+      const clearScrollDrag = (pointer: Phaser.Input.Pointer) => {
+        if (!this.scrollDrag || pointer.id !== this.scrollDrag.pointerId) return;
+        if (!this.scrollDrag.didDrag) {
+          scrollZone.disableInteractive();
+          const hits = this.input.hitTestPointer(pointer).filter((o) => o !== scrollZone);
+          scrollZone.setInteractive(
+            new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight),
+            Phaser.Geom.Rectangle.Contains
+          );
+          if (hits.length > 0) {
+            const target = hits[0];
+            target.emit('pointerdown', pointer);
+            target.emit('pointerup', pointer);
+          }
+        }
+        this.scrollDrag = null;
+      };
+
+      scrollZone.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+      scrollZone.on('pointerout', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+      this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+
       const keys = this.input.keyboard?.addKeys('UP,DOWN,ESC');
       if (keys && 'UP' in keys && 'DOWN' in keys && 'ESC' in keys) {
         (keys.UP as Phaser.Input.Keyboard.Key).on('down', () => this.applyScroll(-SCROLL_SPEED));
@@ -166,14 +224,18 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       }
     }
 
-    private applyScroll(delta: number) {
-      this.scrollY = Phaser.Math.Clamp(this.scrollY + delta, 0, this.maxScroll);
+    private setScrollY(y: number) {
+      this.scrollY = Phaser.Math.Clamp(y, 0, this.maxScroll);
       this.settingsRows.forEach((r, i) => {
         r.container.setPosition(
           this.settingsListX,
           this.settingsListYBase + this.settingsRowYs[i] - this.scrollY
         );
       });
+    }
+
+    private applyScroll(delta: number) {
+      this.setScrollY(this.scrollY + delta);
     }
 
     private createCloseButton(x: number, y: number, onClick: () => void) {
