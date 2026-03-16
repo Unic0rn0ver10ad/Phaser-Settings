@@ -13,7 +13,7 @@
 - **Validation**: `getDefaultForDefinition(def)`, `getOptionValues(def)`, `validateSchema(schema)` (dev).
 - **Manager**: `SettingsManager.create(options)`, `SettingsManager.getInstance()`, `SettingsManager.resetForTests()`, `isInitialized()`; instance methods: `getSchema()`, `get(id)`, `getOrDefault(id)`, `set(id, value)`, `resetToDefaults()`, `isVisible(def)`, `isEnabled(def)`, `subscribe(cb)`, `onApply(cb)`, `onApplySetting(id, cb)`.
 - **UI**: `defaultSettingsTheme`, `renderSettingsList(options)`, `createSettingsModalScene(options)`.
-- **Scene factory options**: `schema`, `storage` or `manager`, `theme?`, `onAction?(args)`, `onClose?()`.
+- **Scene factory options**: `schema`, `storage` or `manager`, `theme?`, `bounds?` (`{ x, y, width, height }` to confine modal to a rectangle), `onAction?(args)`, `onClose?()`. Bounds can also be passed at launch: `scene.launch('SettingsScene', { bounds })`.
 
 ## Unsupported (0.x)
 
@@ -26,6 +26,14 @@
 - **Pre-init**: `getInstance()` before `create()` **throws** with message: "SettingsManager not initialized. Call SettingsManager.create() first."
 - **Singleton**: After `create()`, `getInstance()` returns the same instance.
 - **Tests**: Call `SettingsManager.resetForTests()` to clear the singleton; then `create()` may be called again. Document as test/dev only.
+
+## Reacting to setting changes (live values)
+
+When a control in the settings modal (or any caller) calls `manager.set(id, value)`, the manager updates its cache, persists, and **notifies all subscribers**.
+
+To show live values (e.g. a debug panel or main menu that reflects current settings), call `SettingsManager.getInstance().subscribe(callback)`. The callback `(id, value) => void` is invoked synchronously on every `set`.
+
+Use the callback to update your UI. Prefer applying UI updates from a safe context (e.g. store the new state and apply it in your scene’s `update()` or on the next tick) so you avoid updating game objects from arbitrary call stacks.
 
 ## Error and coercion
 

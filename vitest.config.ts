@@ -7,6 +7,9 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
   },
   resolve: {
-    alias: { phaser: resolve(__dirname, 'node_modules/phaser') },
+    alias: {
+      phaser: resolve(__dirname, 'node_modules/phaser'),
+      'phaser-settings': resolve(__dirname, 'src/index.ts'),
+    },
   },
 });

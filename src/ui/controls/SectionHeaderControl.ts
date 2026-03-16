@@ -5,7 +5,7 @@ export function createSectionHeader(
   ctx: ControlContext,
   props: SettingControlProps<SectionSettingDefinition>
 ): ControlResult {
-  const { scene, theme } = ctx;
+  const { scene, theme, listWidth } = ctx;
   const { definition } = props;
   const bg = scene.add.graphics();
   const label = scene.add.text(theme.paddingHorizontal, theme.sectionHeaderHeight / 2, definition.label, {
@@ -16,10 +16,10 @@ export function createSectionHeader(
 
   if (theme.sectionBackgroundColor !== undefined) {
     bg.fillStyle(theme.sectionBackgroundColor, 0.6);
-    bg.fillRect(0, 0, 2000, theme.sectionHeaderHeight);
+    bg.fillRect(0, 0, listWidth, theme.sectionHeaderHeight);
   }
 
   const container = scene.add.container(0, 0, [bg, label]);
-  container.setSize(2000, theme.sectionHeaderHeight);
+  container.setSize(listWidth, theme.sectionHeaderHeight);
   return { container };
 }

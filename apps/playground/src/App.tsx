@@ -1,13 +1,15 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import Phaser from 'phaser';
 import {
   SettingsManager,
   createSettingsModalScene,
   type SettingsStorageAdapter,
+  type SettingsSchema,
 } from 'phaser-settings';
 import { getGameConfig } from './phaser/gameConfig';
-import { playgroundSchema } from './settings/testSettingsConfig';
-import { ControlsPanel } from './controls/ControlsPanel';
+import settingsSchemaJson from './settings.json';
+
+const settingsSchema = settingsSchemaJson as SettingsSchema;
 
 const STORAGE_KEY = 'phaser-settings-playground';
 
@@ -34,21 +36,28 @@ const storageAdapter: SettingsStorageAdapter = {
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-  const [manager, setManager] = useState<SettingsManager | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     if (!SettingsManager.isInitialized()) {
-      SettingsManager.create({ schema: playgroundSchema, storage: storageAdapter });
+      SettingsManager.create({ schema: settingsSchema, storage: storageAdapter });
     }
     const settingsManager = SettingsManager.getInstance();
-    setManager(settingsManager);
 
     const SettingsScene = createSettingsModalScene({
       manager: settingsManager,
       title: 'SETTINGS',
       onAction({ settingId, manager: m, scene, requestClose }) {
+        const def = m.getSchema().definitions.find((d) => d.id === settingId);
+        const label =
+          def && def.type === 'action' && 'actionLabel' in def
+            ? (def as { actionLabel?: string }).actionLabel
+            : def && 'label' in def
+              ? (def as { label: string }).label
+              : settingId;
+        const playground = scene.scene.get('PlaygroundScene');
+        if (playground) playground.events.emit('buttonPressed', { label: String(label) });
         if (settingId === 'restoreDefaults') {
           if (confirm('Restore all settings to defaults?')) {
             m.resetToDefaults();
@@ -57,9 +66,7 @@ export default function App() {
         }
         requestClose();
       },
-      onClose() {
-        setManager(SettingsManager.getInstance());
-      },
+      onClose() {},
     });
 
     const config = getGameConfig(containerRef.current, [SettingsScene]);
@@ -74,7 +81,6 @@ export default function App() {
   return (
     <div className="app">
       <div className="phaser-container" ref={containerRef} />
-      <ControlsPanel manager={manager} />
     </div>
   );
 }

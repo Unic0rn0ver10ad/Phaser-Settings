@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "categories": [
+    { "id": "touch", "label": "Touch", "order": 0 },
+    { "id": "display", "label": "Display", "order": 10 },
+    { "id": "actions", "label": "Actions", "order": 20 }
+  ],
+  "definitions": [
+    { "type": "section", "id": "section_touch", "label": "Touch & input", "category": "touch", "default": false },
+    {
+      "type": "slider",
+      "id": "tapDragThreshold",
+      "label": "Slider A",
+      "category": "touch",
+      "default": 4,
+      "slider": { "min": 0, "max": 32, "step": 2, "suffix": "px" },
+      "help": "Movement under this is treated as tap.",
+      "applyImmediately": true
+    },
+    {
+      "type": "slider",
+      "id": "scrollSensitivity",
+      "label": "Slider B",
+      "category": "touch",
+      "default": 1,
+      "slider": { "min": 0.25, "max": 2, "step": 0.25, "suffix": "x" },
+      "applyImmediately": true
+    },
+    {
+      "type": "segmented",
+      "id": "virtualJoystick",
+      "label": "Virtual joystick",
+      "category": "touch",
+      "default": "off",
+      "options": [
+        { "value": "off", "label": "Off" },
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "applyImmediately": true
+    },
+    { "type": "section", "id": "section_display", "label": "Display", "category": "display", "default": false },
+    {
+      "type": "select",
+      "id": "language",
+      "label": "Language Selector",
+      "category": "display",
+      "default": "en",
+      "options": [
+        { "value": "en", "label": "English" },
+        { "value": "klingon", "label": "Klingon" },
+        { "value": "swahili", "label": "Swahili" }
+      ],
+      "applyImmediately": true
+    },
+    { "type": "section", "id": "section_actions", "label": "Actions", "category": "actions", "default": false },
+    {
+      "type": "action",
+      "id": "buttonA",
+      "label": "Button A text",
+      "category": "actions",
+      "default": false,
+      "actionLabel": "A"
+    },
+    {
+      "type": "action",
+      "id": "restoreDefaults",
+      "label": "Restore defaults",
+      "category": "actions",
+      "default": false,
+      "actionLabel": "Restore defaults"
+    }
+  ]
+}

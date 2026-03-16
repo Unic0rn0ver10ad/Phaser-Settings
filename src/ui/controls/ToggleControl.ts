@@ -40,5 +40,5 @@ export function createToggleControl(
   }
 
   const container = scene.add.container(0, 0, [track, thumb, zone]);
-  return { container, focusTarget: zone };
+  return { container };
 }

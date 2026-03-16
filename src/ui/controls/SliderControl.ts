@@ -21,8 +21,6 @@ export function createSliderControl(
 
   let current = Math.max(slider.min, Math.min(slider.max, Number.isNaN(numVal) ? slider.min : numVal));
   let pct = range === 0 ? 0 : (current - slider.min) / range;
-  let dragging = false;
-  let dragPointerId: number | null = null;
 
   const trackBg = scene.add.graphics();
   const trackFill = scene.add.graphics();
@@ -47,9 +45,9 @@ export function createSliderControl(
   }
   draw();
 
-  function applyPointer(ptrX: number) {
-    const mat = container.getWorldTransformMatrix();
-    const localX = ptrX - mat.tx;
+  const container = scene.add.container(0, 0, [trackBg, trackFill, thumb, valueText]);
+
+  function applyFromLocalX(localX: number) {
     const newPct = Phaser.Math.Clamp(localX / trackWidth, 0, 1);
     const raw = slider.min + newPct * range;
     const stepped = slider.min + Math.round((raw - slider.min) / slider.step) * slider.step;
@@ -59,33 +57,53 @@ export function createSliderControl(
     onChange(current);
   }
 
-  const endDrag = () => {
-    if (dragging) scene.events.emit('settings:scrollUnblock');
-    dragging = false;
-    dragPointerId = null;
-  };
-
+  // Full-track zone (fixed center) so click or drag works anywhere on track, including on the thumb
   const zone = scene.add.zone(trackWidth / 2, theme.controlHeight / 2, trackWidth, theme.controlHeight)
     .setInteractive({ useHandCursor: true });
+  container.add(zone);
+
   if (!disabled) {
+    let dragging = false;
+    let dragPointerId: number | null = null;
+
+    const endDrag = () => {
+      if (dragging) scene.events.emit('settings:scrollUnblock');
+      dragging = false;
+      dragPointerId = null;
+    };
+
     zone.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
+      scene.events.emit('settings:scrollBlock');
       dragging = true;
       dragPointerId = ptr.id;
-      scene.events.emit('settings:scrollBlock');
-      applyPointer(ptr.x);
+      const worldX = ptr.worldX ?? ptr.x;
+      const mat = container.getWorldTransformMatrix();
+      const localX = worldX - mat.tx;
+      applyFromLocalX(localX);
     });
     zone.on('pointerup', endDrag);
     zone.on('pointerout', endDrag);
-    scene.input.on('pointermove', (ptr: Phaser.Input.Pointer) => {
-      if (dragging && dragPointerId !== null && ptr.id === dragPointerId) applyPointer(ptr.x);
-    });
-    scene.input.on('pointerup', (ptr: Phaser.Input.Pointer) => {
+
+    const onPointerMove = (ptr: Phaser.Input.Pointer) => {
+      if (dragging && dragPointerId !== null && ptr.id === dragPointerId) {
+        const worldX = ptr.worldX ?? ptr.x;
+        const mat = container.getWorldTransformMatrix();
+        const localX = worldX - mat.tx;
+        applyFromLocalX(localX);
+      }
+    };
+    const onPointerUp = (ptr: Phaser.Input.Pointer) => {
       if (dragging && (dragPointerId === null || ptr.id === dragPointerId)) endDrag();
+    };
+    scene.input.on('pointermove', onPointerMove);
+    scene.input.on('pointerup', onPointerUp);
+    scene.events.once('shutdown', () => {
+      scene.input.off('pointermove', onPointerMove);
+      scene.input.off('pointerup', onPointerUp);
     });
   }
 
-  const container = scene.add.container(0, 0, [trackBg, trackFill, thumb, valueText, zone]);
-  return { container, focusTarget: zone };
+  return { container };
 }
 
 function formatSliderValue(n: number, suffix?: string): string {

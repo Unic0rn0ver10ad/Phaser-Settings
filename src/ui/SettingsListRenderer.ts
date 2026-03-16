@@ -12,7 +12,6 @@ export interface SettingsListRendererOptions {
   scene: Phaser.Scene;
   theme?: Partial<SettingsTheme>;
   listWidth: number;
-  viewportHeight?: number;
   /** When provided, this manager is used for schema, visibility, and updates. Otherwise getInstance() is used. */
   manager?: SettingsManager;
   onAction?: (settingId: string) => void;
@@ -35,7 +34,7 @@ export function renderSettingsList(options: SettingsListRendererOptions): {
   const schema = manager.getSchema();
 
   const controlWidth = Math.floor(listWidth * 0.45);
-  const ctx: ControlContext = { scene, theme, controlWidth };
+  const ctx: ControlContext = { scene, theme, controlWidth, listWidth };
 
   const rows: RenderedRow[] = [];
   const rowYs: number[] = [];

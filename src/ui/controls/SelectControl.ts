@@ -15,7 +15,7 @@ export function createSelectControl(
   const { definition, value, disabled, onChange } = props;
   if (definition.options.length === 0) {
     const container = scene.add.container(0, 0, []);
-    return { container, focusTarget: scene.add.zone(0, 0, 1, 1) };
+    return { container };
   }
   const selectedOption = definition.options.find((o) => o.value === value) ?? definition.options[0];
 
@@ -41,11 +41,13 @@ export function createSelectControl(
 
   if (!disabled) {
     let open = false;
-    let dropdownItems: Phaser.GameObjects.GameObject[] = [];
+    let dropdownContainer: Phaser.GameObjects.Container | null = null;
 
     const destroyDropdown = () => {
-      dropdownItems.forEach((item) => item.destroy());
-      dropdownItems = [];
+      if (dropdownContainer) {
+        dropdownContainer.destroy(true);
+        dropdownContainer = null;
+      }
       open = false;
     };
 
@@ -63,32 +65,37 @@ export function createSelectControl(
       const dropdownY = worldY + h + 4;
       const totalH = definition.options.length * OPTION_HEIGHT;
 
+      dropdownContainer = scene.add.container(worldX, dropdownY);
+      dropdownContainer.setDepth(20);
+
       const dropBg = scene.add.graphics();
       dropBg.fillStyle(0x1a1a2e, 0.98);
-      dropBg.fillRoundedRect(worldX, dropdownY, w, totalH, 6);
+      dropBg.fillRoundedRect(0, 0, w, totalH, 6);
       dropBg.lineStyle(1, 0x4fc3f7);
-      dropBg.strokeRoundedRect(worldX, dropdownY, w, totalH, 6);
-      dropBg.setDepth(20);
-      dropdownItems.push(dropBg);
+      dropBg.strokeRoundedRect(0, 0, w, totalH, 6);
+      dropdownContainer.add(dropBg);
+
+      const dropdownHitSet = new Set<Phaser.GameObjects.GameObject>([dropdownContainer, dropBg]);
 
       definition.options.forEach((opt, i) => {
-        const optY = dropdownY + i * OPTION_HEIGHT;
-        const optText = scene.add.text(worldX + 8, optY + OPTION_HEIGHT / 2, opt.label, {
+        const optY = i * OPTION_HEIGHT;
+        const optText = scene.add.text(8, optY + OPTION_HEIGHT / 2, opt.label, {
           fontSize: theme.helpFontSize,
           color: opt.value === value ? '#4fc3f7' : TEXT_COLOR,
           fontFamily: 'monospace',
-        }).setOrigin(0, 0.5).setDepth(20);
-        dropdownItems.push(optText);
+        }).setOrigin(0, 0.5);
+        dropdownContainer!.add(optText);
+        dropdownHitSet.add(optText);
 
-        const optZone = scene.add.zone(worldX + w / 2, optY + OPTION_HEIGHT / 2, w, OPTION_HEIGHT)
-          .setInteractive({ useHandCursor: true })
-          .setDepth(20);
+        const optZone = scene.add.zone(w / 2, optY + OPTION_HEIGHT / 2, w, OPTION_HEIGHT)
+          .setInteractive({ useHandCursor: true });
         optZone.on('pointerdown', () => {
           onChange(opt.value);
           text.setText(opt.label);
           destroyDropdown();
         });
-        dropdownItems.push(optZone);
+        dropdownContainer!.add(optZone);
+        dropdownHitSet.add(optZone);
       });
 
       open = true;
@@ -96,12 +103,12 @@ export function createSelectControl(
       scene.time.delayedCall(0, () => {
         scene.input.once('pointerdown', (_ptr: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
           if (!open) return;
-          const isDropdownClick = currentlyOver.some((obj) => dropdownItems.includes(obj));
-          if (!isDropdownClick) destroyDropdown();
+          const hitDropdown = currentlyOver && currentlyOver.some((obj) => dropdownHitSet.has(obj));
+          if (!hitDropdown) destroyDropdown();
         });
       });
     });
   }
 
-  return { container, focusTarget: zone };
+  return { container };
 }

@@ -22,11 +22,21 @@ const CLOSE_BUTTON_INSET = 12;
 const SCREEN_PADDING = 16;
 const DEFAULT_TITLE = 'SETTINGS';
 
+/** When provided, the modal is confined to this rectangle (e.g. game viewport). Enables showing other UI (e.g. live values) outside the modal. */
+export interface SettingsModalBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface CreateSettingsModalSceneOptions {
   /** Manager must already be initialized (SettingsManager.create() at bootstrap). */
   manager: SettingsManager;
   theme?: Partial<SettingsTheme>;
   title?: string;
+  /** When set, overlay and panel are drawn and constrained to this rectangle. Use to open the modal inside a game viewport so the rest of the canvas stays visible. */
+  bounds?: SettingsModalBounds;
   /** Called when user triggers an action (e.g. restoreDefaults, deleteSave, credits). App handles confirm, side effects, then requestClose() and/or navigation. */
   onAction?: (args: {
     settingId: string;
@@ -54,32 +64,43 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
     private scrollY = 0;
     private maxScroll = 0;
     private viewportHeight = 0;
+    private settingsListWidth = 0;
+    private versionContainer: Phaser.GameObjects.Container | null = null;
+    private versionRowY = 0;
+    /** Bounds passed via scene.launch(key, { bounds }) when not in options. */
+    private launchBounds: SettingsModalBounds | undefined;
     /** Touch/drag scroll: start Y, start scrollY, pointer id, and whether we actually scrolled (to avoid stealing taps). */
     private scrollDrag: { startY: number; startScrollY: number; pointerId: number; didDrag: boolean } | null = null;
     /** While > 0, scroll is suspended (e.g. slider or other control is being dragged). */
     private scrollBlockCount = 0;
-    /** When we forward pointerdown to a control (hit under zone), we forward pointerup to it on release. */
-    private forwardedPointerTarget: Phaser.GameObjects.GameObject | null = null;
-
     constructor() {
       super({ key: sceneKey });
     }
 
-    init(_data?: Record<string, unknown>) {
-      // Launched as overlay; no transition
+    init(data?: Record<string, unknown>) {
+      if (data && typeof data.bounds === 'object' && data.bounds !== null) {
+        const br = data.bounds as Record<string, number>;
+        if (typeof br.x === 'number' && typeof br.y === 'number' && typeof br.width === 'number' && typeof br.height === 'number') {
+          this.launchBounds = { x: br.x, y: br.y, width: br.width, height: br.height };
+        }
+      }
     }
 
     create() {
-      const W = this.scale.width;
-      const H = this.scale.height;
+      const b = opts.bounds ?? this.launchBounds;
+      const W = b ? b.width : this.scale.width;
+      const H = b ? b.height : this.scale.height;
+      const offsetX = b ? b.x : 0;
+      const offsetY = b ? b.y : 0;
 
       this.scene.bringToTop(this.scene.key);
       this.cameras.main.setBackgroundColor('rgba(0,0,0,0)');
 
-      const panelLeft = MODAL_MARGIN;
-      const panelTop = MODAL_MARGIN;
-      const panelWidth = W - 2 * MODAL_MARGIN;
-      const panelHeight = H - 2 * MODAL_MARGIN;
+      const margin = b ? 0 : MODAL_MARGIN;
+      const panelLeft = offsetX + margin;
+      const panelTop = offsetY + margin;
+      const panelWidth = W - 2 * margin;
+      const panelHeight = H - 2 * margin;
 
       const contentLeft = panelLeft + MODAL_BORDER;
       const contentTop = panelTop + MODAL_BORDER;
@@ -93,17 +114,15 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
 
       const overlayGfx = this.add.graphics();
       overlayGfx.fillStyle(0x000000, OVERLAY_ALPHA);
-      overlayGfx.fillRect(0, 0, W, H);
+      overlayGfx.fillRect(offsetX, offsetY, W, H);
       overlayGfx.setDepth(0);
 
-      const overlayZone = this.add.zone(W / 2, H / 2, W, H).setInteractive(
-        new Phaser.Geom.Rectangle(0, 0, W, H),
-        (_hitArea: Phaser.Geom.Rectangle, x: number, y: number) => {
-          return !(
-            x >= panelLeft && x <= panelLeft + panelWidth &&
-            y >= panelTop && y <= panelTop + panelHeight
-          );
-        }
+      const boundsRect = new Phaser.Geom.Rectangle(offsetX, offsetY, W, H);
+      const panelRect = new Phaser.Geom.Rectangle(panelLeft, panelTop, panelWidth, panelHeight);
+      const overlayZone = this.add.zone(offsetX + W / 2, offsetY + H / 2, W, H).setInteractive(
+        new Phaser.Geom.Rectangle(-W / 2, -H / 2, W, H),
+        (_hitArea: Phaser.Geom.Rectangle, x: number, y: number) =>
+          Phaser.Geom.Rectangle.Contains(boundsRect, x, y) && !Phaser.Geom.Rectangle.Contains(panelRect, x, y)
       );
       overlayZone.on('pointerdown', () => requestClose());
       overlayZone.setDepth(0);
@@ -135,7 +154,6 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       const { rows, rowYs, totalHeight } = renderSettingsList({
         scene: this,
         listWidth,
-        viewportHeight: this.viewportHeight,
         theme: opts.theme,
         manager: opts.manager,
         onAction: (id) => {
@@ -151,7 +169,20 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       this.settingsRowYs = rowYs;
       this.settingsListX = contentLeft + SCREEN_PADDING;
       this.settingsListYBase = listAreaTop + 8;
-      this.maxScroll = Math.max(0, totalHeight - this.viewportHeight);
+      this.settingsListWidth = listWidth;
+
+      const versionGap = 24;
+      const versionLabel = `phaser-settings v${VERSION}`;
+      const versionText = this.add.text(0, 0, versionLabel, {
+        fontSize: '12px',
+        color: '#6b7a99',
+        fontFamily: 'monospace',
+      }).setOrigin(0.5);
+      this.versionContainer = this.add.container(0, 0);
+      this.versionContainer.add(versionText);
+      this.versionRowY = totalHeight + versionGap;
+      const totalHeightWithVersion = this.versionRowY + 20;
+      this.maxScroll = Math.max(0, totalHeightWithVersion - this.viewportHeight);
 
       const maskGraphics = this.add.graphics().setVisible(false);
       maskGraphics.fillStyle(0xffffff, 1);
@@ -163,16 +194,22 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         r.container.setDepth(2);
         r.container.setMask(listMask);
       });
+      this.versionContainer.setPosition(this.settingsListX + listWidth / 2, this.settingsListYBase + this.versionRowY);
+      this.versionContainer.setDepth(2);
+      this.versionContainer.setMask(listMask);
 
-      this.input.on('wheel', (_ptr: Phaser.Input.Pointer, _go: unknown[], _dx: number, dy: number) => {
+      const onWheel = (_ptr: Phaser.Input.Pointer, _go: unknown[], _dx: number, dy: number) => {
         this.applyScroll(dy);
-      });
+      };
+      this.input.on('wheel', onWheel);
 
-      // Touch/drag scrolling: zone ON TOP of the list (depth 2.5) so touches on labels
-      // hit the zone first. We only treat as scroll if the touch moves (didDrag); taps
-      // are forwarded to the control underneath so sliders/buttons still work.
+      // Touch/drag scrolling: use scene-level pointerdown so touch and mouse both work. When the
+      // pointer is in the list bounds, hit-test: if topmost is a control, it already got the event;
+      // otherwise start scroll drag (empty area or label).
       const listLeft = this.settingsListX;
       const listTop = this.settingsListYBase;
+      const listRight = listLeft + listWidth;
+      const listBottom = listTop + this.viewportHeight;
       const scrollZone = this.add
         .zone(listLeft + listWidth / 2, listTop + this.viewportHeight / 2, listWidth, this.viewportHeight)
         .setInteractive(
@@ -186,31 +223,25 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
 
       const startScrollDrag = (pointer: Phaser.Input.Pointer) => {
         if (this.scrollBlockCount > 0) return;
-        scrollZone.disableInteractive();
-        const hits = this.input.hitTestPointer(pointer).filter((o) => o !== scrollZone);
-        scrollZone.setInteractive(
-          new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight),
-          Phaser.Geom.Rectangle.Contains
-        );
-        if (hits.length > 0) {
-          this.forwardedPointerTarget = hits[0];
-          hits[0].emit('pointerdown', pointer);
-          return;
-        }
         if (pointer.event && typeof pointer.event.preventDefault === 'function') pointer.event.preventDefault();
         const y = pointer.worldX !== undefined ? pointer.worldY : pointer.y;
         this.scrollDrag = { startY: y, startScrollY: this.scrollY, pointerId: pointer.id, didDrag: false };
       };
 
-      scrollZone.on('pointerdown', startScrollDrag);
-      this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const onListPointerDown = (pointer: Phaser.Input.Pointer) => {
         if (this.scrollDrag || this.scrollBlockCount > 0) return;
-        const x = pointer.worldX !== undefined ? pointer.worldX : pointer.x;
-        const y = pointer.worldY !== undefined ? pointer.worldY : pointer.y;
-        if (x >= listLeft && x <= listLeft + listWidth && y >= listTop && y <= listTop + this.viewportHeight) startScrollDrag(pointer);
-      });
+        const x = pointer.worldX ?? pointer.x;
+        const y = pointer.worldY ?? pointer.y;
+        if (x < listLeft || x > listRight || y < listTop || y > listBottom) return;
+        const hits = this.input.hitTestPointer(pointer);
+        const top = hits[0];
+        if (top && top !== scrollZone && !(top instanceof Phaser.GameObjects.Container)) return;
+        startScrollDrag(pointer);
+      };
 
-      this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      this.input.on('pointerdown', onListPointerDown);
+
+      const onPointerMove = (pointer: Phaser.Input.Pointer) => {
         if (this.scrollBlockCount > 0 || !this.scrollDrag || pointer.id !== this.scrollDrag.pointerId) return;
         if (pointer.event && typeof pointer.event.preventDefault === 'function') pointer.event.preventDefault();
         const y = pointer.worldX !== undefined ? pointer.worldY : pointer.y;
@@ -224,49 +255,36 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         this.setScrollY(newScrollY);
         this.scrollDrag.startY = y;
         this.scrollDrag.startScrollY = this.scrollY;
-      });
+      };
+      this.input.on('pointermove', onPointerMove);
 
       const clearScrollDrag = (pointer: Phaser.Input.Pointer) => {
-        if (this.scrollDrag && pointer.id === this.scrollDrag.pointerId) {
-          if (!this.scrollDrag.didDrag) {
-            scrollZone.disableInteractive();
-            const hits = this.input.hitTestPointer(pointer).filter((o) => o !== scrollZone);
-            scrollZone.setInteractive(
-              new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight),
-              Phaser.Geom.Rectangle.Contains
-            );
-            if (hits.length > 0) {
-              const target = hits[0];
-              target.emit('pointerdown', pointer);
-              target.emit('pointerup', pointer);
-            }
-          }
-          this.scrollDrag = null;
-          return;
-        }
-        if (this.forwardedPointerTarget) {
-          this.forwardedPointerTarget.emit('pointerup', pointer);
-          this.forwardedPointerTarget = null;
-        }
+        if (this.scrollDrag && pointer.id === this.scrollDrag.pointerId) this.scrollDrag = null;
       };
 
-      scrollZone.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
-      scrollZone.on('pointerout', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
       this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
 
       const keys = this.input.keyboard?.addKeys('UP,DOWN,ESC');
+      const onKeyUp = () => this.applyScroll(-SCROLL_SPEED);
+      const onKeyDown = () => this.applyScroll(SCROLL_SPEED);
+      const onKeyEsc = () => requestClose();
       if (keys && 'UP' in keys && 'DOWN' in keys && 'ESC' in keys) {
-        (keys.UP as Phaser.Input.Keyboard.Key).on('down', () => this.applyScroll(-SCROLL_SPEED));
-        (keys.DOWN as Phaser.Input.Keyboard.Key).on('down', () => this.applyScroll(SCROLL_SPEED));
-        (keys.ESC as Phaser.Input.Keyboard.Key).on('down', () => requestClose());
+        (keys.UP as Phaser.Input.Keyboard.Key).on('down', onKeyUp);
+        (keys.DOWN as Phaser.Input.Keyboard.Key).on('down', onKeyDown);
+        (keys.ESC as Phaser.Input.Keyboard.Key).on('down', onKeyEsc);
       }
 
-      const versionLabel = `phaser-settings v${VERSION}`;
-      this.add.text(panelLeft + panelWidth / 2, panelTop + panelHeight - 14, versionLabel, {
-        fontSize: '12px',
-        color: '#6b7a99',
-        fontFamily: 'monospace',
-      }).setOrigin(0.5, 1).setDepth(2);
+      this.events.once('shutdown', () => {
+        this.input.off('wheel', onWheel);
+        this.input.off('pointerdown', onListPointerDown);
+        this.input.off('pointermove', onPointerMove);
+        this.input.off('pointerup', clearScrollDrag);
+        if (keys && 'UP' in keys && 'DOWN' in keys && 'ESC' in keys) {
+          (keys.UP as Phaser.Input.Keyboard.Key).off('down', onKeyUp);
+          (keys.DOWN as Phaser.Input.Keyboard.Key).off('down', onKeyDown);
+          (keys.ESC as Phaser.Input.Keyboard.Key).off('down', onKeyEsc);
+        }
+      });
     }
 
     private setScrollY(y: number) {
@@ -277,6 +295,12 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
           this.settingsListYBase + this.settingsRowYs[i] - this.scrollY
         );
       });
+      if (this.versionContainer) {
+        this.versionContainer.setPosition(
+          this.settingsListX + this.settingsListWidth / 2,
+          this.settingsListYBase + this.versionRowY - this.scrollY
+        );
+      }
     }
 
     private applyScroll(delta: number) {
@@ -285,29 +309,31 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
 
     private createCloseButton(x: number, y: number, onClick: () => void) {
       const size = CLOSE_BUTTON_SIZE;
+      const half = size / 2;
+      const pad = 10;
+
       const bg = this.add.graphics();
       const draw = (hover: boolean) => {
         bg.clear();
         bg.fillStyle(hover ? 0x333366 : 0x1a237e, 1);
-        bg.fillRoundedRect(x - size / 2, y - size / 2, size, size, 8);
+        bg.fillRoundedRect(-half, -half, size, size, 8);
         bg.lineStyle(2, 0x4fc3f7, 1);
-        bg.strokeRoundedRect(x - size / 2, y - size / 2, size, size, 8);
+        bg.strokeRoundedRect(-half, -half, size, size, 8);
       };
       draw(false);
-      bg.setDepth(2);
 
-      const pad = 10;
       const line = this.add.graphics();
       line.lineStyle(2, 0xe0e0e0, 1);
-      line.lineBetween(x - size / 2 + pad, y - size / 2 + pad, x + size / 2 - pad, y + size / 2 - pad);
-      line.lineBetween(x + size / 2 - pad, y - size / 2 + pad, x - size / 2 + pad, y + size / 2 - pad);
-      line.setDepth(2);
+      line.lineBetween(-half + pad, -half + pad, half - pad, half - pad);
+      line.lineBetween(half - pad, -half + pad, -half + pad, half - pad);
 
-      const zone = this.add.zone(x, y, size, size).setInteractive({ useHandCursor: true });
-      zone.setDepth(3);
+      const zone = this.add.zone(0, 0, size, size).setInteractive({ useHandCursor: true });
       zone.on('pointerover', () => draw(true));
       zone.on('pointerout', () => draw(false));
       zone.on('pointerdown', () => onClick());
+
+      const btn = this.add.container(x, y, [bg, line, zone]);
+      btn.setDepth(2);
     }
   }
 

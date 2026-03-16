@@ -45,5 +45,5 @@ export function createActionControl(
   }
 
   const container = scene.add.container(0, 0, [bg, text, zone]);
-  return { container, focusTarget: zone };
+  return { container };
 }

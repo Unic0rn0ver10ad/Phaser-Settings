@@ -5,6 +5,8 @@ export interface ControlContext {
   scene: Phaser.Scene;
   theme: SettingsTheme;
   controlWidth: number;
+  /** Total width of the list (for section header background). */
+  listWidth: number;
 }
 
 export interface SettingControlProps<T extends SettingDefinition = SettingDefinition> {
@@ -17,5 +19,4 @@ export interface SettingControlProps<T extends SettingDefinition = SettingDefini
 
 export interface ControlResult {
   container: Phaser.GameObjects.Container;
-  focusTarget?: Phaser.GameObjects.GameObject;
 }

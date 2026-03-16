@@ -16,8 +16,8 @@ From this directory you can also run `npm run dev`, `npm run build`, `npm run te
 
 1. From repo root: `npm run dev:playground`.
 2. Open http://localhost:5174.
-3. Click **Open Settings** to open the phaser-settings modal; change sliders, toggles, segmented controls.
-4. Use the panel below the canvas to see live values from `SettingsManager`.
+3. Click the **hamburger menu** (top-left of the game area) to open the settings modal; change sliders, toggles, segmented controls, and the language dropdown.
+4. Use the **right-hand panel** to see live values from `SettingsManager`.
 5. Test touch: drag the settings list to scroll; tap controls to change values.
 
 Settings are persisted in `localStorage` under `phaser-settings-playground`.

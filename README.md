@@ -2,6 +2,8 @@
 
 Data-driven Phaser 3 settings system: schema, storage adapter, validation, and modal UI (toggle, slider, select, segmented, action, section).
 
+**This package is the single source of truth for settings in consuming apps.** Apps must use only its [public API](PUBLIC_API.md) and must not wrap or duplicate its resolution/validation behavior. See [docs/INTEGRATION.md](docs/INTEGRATION.md) for the client contract and [AGENTS.md](AGENTS.md) for instructions to AI coding agents.
+
 ![Image of Settings Menu in a Game](set-phaser-on-settings.png)
 
 ## Install
@@ -115,8 +117,7 @@ For local development use `"phaser-settings": "file:./packages/phaser-settings"`
 2. Read the value in game code via `SettingsManager.getInstance().get('id')` or `.getOrDefault('id')`.
 3. Optional: register an apply callback with `settings.onApplySetting('id', (id, value) => { ... })` for immediate effects.
 
-- **Integration guide** (install, adapter, schema, bootstrap, scene registration): [docs/INTEGRATION.md](docs/INTEGRATION.md)  
-- **Implementation notes** (e.g. "missing label", "Scene key not found"): [docs/IMPLEMENTATION_NOTES.md](docs/IMPLEMENTATION_NOTES.md)  
+- **Integration guide** (install, adapter, schema, bootstrap, scene registration): [docs/INTEGRATION.md](docs/INTEGRATION.md)
 - **API and contract**: [docs/API.md](docs/API.md) (lifecycle, storage, migrations, scene options).
 
 ## API
@@ -125,6 +126,8 @@ For local development use `"phaser-settings": "file:./packages/phaser-settings"`
 - **Storage**: `SettingsStorageAdapter` interface.
 - **Manager**: `SettingsManager.create()`, `getInstance()`, `resetForTests()`, `isInitialized()`; instance methods `get`, `set`, `resetToDefaults`, `subscribe`, `onApplySetting`, etc.
 - **UI**: `defaultSettingsTheme`, `renderSettingsList()`, `createSettingsModalScene()`.
+
+Public export list and stability: see [PUBLIC_API.md](PUBLIC_API.md).
 
 ## Publish checklist
 

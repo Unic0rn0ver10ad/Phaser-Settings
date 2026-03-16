@@ -21,4 +21,5 @@ export {
 export {
   createSettingsModalScene,
   type CreateSettingsModalSceneOptions,
+  type SettingsModalBounds,
 } from './createSettingsModalScene.js';

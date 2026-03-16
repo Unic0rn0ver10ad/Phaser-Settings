@@ -13,7 +13,7 @@ export function createSegmentedControl(
   const { definition, value, disabled, onChange } = props;
   if (definition.options.length === 0) {
     const container = scene.add.container(0, 0, []);
-    return { container, focusTarget: container };
+    return { container };
   }
   const count = definition.options.length;
   const segmentWidth = Math.max(40, (controlWidth - (count - 1) * 2) / count);
@@ -84,5 +84,5 @@ export function createSegmentedControl(
   refreshAll();
 
   const container = scene.add.container(0, 0, children);
-  return { container, focusTarget: container };
+  return { container };
 }
