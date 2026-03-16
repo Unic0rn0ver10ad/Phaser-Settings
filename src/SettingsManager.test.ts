@@ -80,6 +80,20 @@ describe('SettingsManager', () => {
     expect(manager.get('vol')).toBe(0.8);
   });
 
+  it('slider value is stepped relative to min (min=5, step=2)', () => {
+    const schemaWithMin: SettingsSchema = {
+      categories: [{ id: 'g', label: 'General', order: 0 }],
+      definitions: [
+        { type: 'slider', id: 'x', label: 'X', category: 'g', default: 5, slider: { min: 5, max: 15, step: 2 } },
+      ],
+    };
+    const storage = createStorage({ x: 6.4 });
+    const manager = SettingsManager.create({ schema: schemaWithMin, storage });
+    expect(manager.get('x')).toBe(7);
+    manager.set('x', 8.9);
+    expect(manager.get('x')).toBe(9);
+  });
+
   it('resetForTests allows create again', () => {
     const storage = createStorage();
     SettingsManager.create({ schema: minimalSchema, storage });

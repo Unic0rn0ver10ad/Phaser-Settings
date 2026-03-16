@@ -11,6 +11,10 @@ export function createSegmentedControl(
 ): ControlResult {
   const { scene, theme, controlWidth } = ctx;
   const { definition, value, disabled, onChange } = props;
+  if (definition.options.length === 0) {
+    const container = scene.add.container(0, 0, []);
+    return { container, focusTarget: container };
+  }
   const count = definition.options.length;
   const segmentWidth = Math.max(40, (controlWidth - (count - 1) * 2) / count);
   const gap = 2;

@@ -38,8 +38,13 @@ export function validateSchema(schema: SettingsSchema): void {
     if (def.type === 'slider' && !def.slider) {
       throw new Error(`SettingsSchema: definition "${def.id}" (slider) missing slider constraints`);
     }
-    if ((def.type === 'select' || def.type === 'segmented') && (!def.options || !Array.isArray(def.options))) {
-      throw new Error(`SettingsSchema: definition "${def.id}" (select/segmented) missing options`);
+    if (def.type === 'select' || def.type === 'segmented') {
+      if (!def.options || !Array.isArray(def.options)) {
+        throw new Error(`SettingsSchema: definition "${def.id}" (select/segmented) missing options`);
+      }
+      if (def.options.length === 0) {
+        throw new Error(`SettingsSchema: definition "${def.id}" (select/segmented) options must be non-empty`);
+      }
     }
     if (def.type === 'action' && !def.actionLabel) {
       throw new Error(`SettingsSchema: definition "${def.id}" (action) missing actionLabel`);

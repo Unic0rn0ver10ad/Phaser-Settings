@@ -1,6 +1,6 @@
 /**
  * Builds a scrollable list of setting rows from schema + current values.
- * Uses SettingsManager.getInstance(); ensure create() was called at bootstrap.
+ * When manager is not provided, uses SettingsManager.getInstance(); ensure create() was called at bootstrap.
  */
 import type { SettingDefinition, SettingValue, SettingsTheme } from '../types.js';
 import type { ControlContext, ControlResult } from './types.js';
@@ -13,6 +13,8 @@ export interface SettingsListRendererOptions {
   theme?: Partial<SettingsTheme>;
   listWidth: number;
   viewportHeight?: number;
+  /** When provided, this manager is used for schema, visibility, and updates. Otherwise getInstance() is used. */
+  manager?: SettingsManager;
   onAction?: (settingId: string) => void;
 }
 
@@ -29,7 +31,7 @@ export function renderSettingsList(options: SettingsListRendererOptions): {
 } {
   const { scene, listWidth, onAction } = options;
   const theme: SettingsTheme = { ...defaultSettingsTheme, ...options.theme };
-  const manager = SettingsManager.getInstance();
+  const manager = options.manager ?? SettingsManager.getInstance();
   const schema = manager.getSchema();
 
   const controlWidth = Math.floor(listWidth * 0.45);

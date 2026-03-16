@@ -13,6 +13,10 @@ export function createSelectControl(
 ): ControlResult {
   const { scene, theme, controlWidth } = ctx;
   const { definition, value, disabled, onChange } = props;
+  if (definition.options.length === 0) {
+    const container = scene.add.container(0, 0, []);
+    return { container, focusTarget: scene.add.zone(0, 0, 1, 1) };
+  }
   const selectedOption = definition.options.find((o) => o.value === value) ?? definition.options[0];
 
   const bg = scene.add.graphics();

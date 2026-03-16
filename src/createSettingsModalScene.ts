@@ -137,6 +137,7 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         listWidth,
         viewportHeight: this.viewportHeight,
         theme: opts.theme,
+        manager: opts.manager,
         onAction: (id) => {
           opts.onAction?.({
             settingId: id,

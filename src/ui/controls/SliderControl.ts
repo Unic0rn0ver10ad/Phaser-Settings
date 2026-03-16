@@ -52,7 +52,7 @@ export function createSliderControl(
     const localX = ptrX - mat.tx;
     const newPct = Phaser.Math.Clamp(localX / trackWidth, 0, 1);
     const raw = slider.min + newPct * range;
-    const stepped = Math.round(raw / slider.step) * slider.step;
+    const stepped = slider.min + Math.round((raw - slider.min) / slider.step) * slider.step;
     current = Math.max(slider.min, Math.min(slider.max, stepped));
     pct = range === 0 ? 0 : (current - slider.min) / range;
     draw();

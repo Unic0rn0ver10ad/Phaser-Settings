@@ -129,7 +129,7 @@ export class SettingsManager {
         return def.default as number;
       }
       const { min, max, step } = def.slider;
-      const stepped = Math.round(n / step) * step;
+      const stepped = min + Math.round((n - min) / step) * step;
       return Math.max(min, Math.min(max, stepped)) as SettingValue;
     }
 
