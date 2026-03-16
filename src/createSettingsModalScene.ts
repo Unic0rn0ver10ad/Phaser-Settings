@@ -8,6 +8,7 @@ import type { SettingsManager } from './SettingsManager.js';
 import type { SettingsTheme } from './types.js';
 import { renderSettingsList } from './ui/SettingsListRenderer.js';
 import type { RenderedRow } from './ui/SettingsListRenderer.js';
+import { VERSION } from './version.js';
 
 const SCROLL_SPEED = 24;
 const MODAL_MARGIN = 24;
@@ -145,7 +146,6 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       this.settingsRowYs = rowYs;
       this.settingsListX = contentLeft + SCREEN_PADDING;
       this.settingsListYBase = listAreaTop + 8;
-      this.settingsListWidth = listWidth;
       this.maxScroll = Math.max(0, totalHeight - this.viewportHeight);
 
       const maskGraphics = this.add.graphics().setVisible(false);
@@ -222,6 +222,13 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         (keys.DOWN as Phaser.Input.Keyboard.Key).on('down', () => this.applyScroll(SCROLL_SPEED));
         (keys.ESC as Phaser.Input.Keyboard.Key).on('down', () => requestClose());
       }
+
+      const versionLabel = `phaser-settings v${VERSION}`;
+      this.add.text(panelLeft + panelWidth / 2, panelTop + panelHeight - 14, versionLabel, {
+        fontSize: '12px',
+        color: '#6b7a99',
+        fontFamily: 'monospace',
+      }).setOrigin(0.5, 1).setDepth(2);
     }
 
     private setScrollY(y: number) {

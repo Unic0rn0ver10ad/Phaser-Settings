@@ -7,6 +7,7 @@
 
 ## Public API surface
 
+- **Version**: `VERSION` (string) — Package version from `package.json`, injected at build. Use `import { VERSION } from 'phaser-settings'` to check the installed version; it is also shown at the bottom of the settings modal.
 - **Types**: `SettingValue`, `SettingDefinition` (union), `SettingsSchema`, `SettingCategory`, `SettingCondition`, `SettingsTheme`, and all definition interfaces (e.g. `ToggleSettingDefinition`).
 - **Storage**: `SettingsStorageAdapter` interface.
 - **Validation**: `getDefaultForDefinition(def)`, `getOptionValues(def)`, `validateSchema(schema)` (dev).

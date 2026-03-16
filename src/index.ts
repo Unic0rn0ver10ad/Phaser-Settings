@@ -2,6 +2,7 @@
  * phaser-settings — data-driven Phaser 3 settings system.
  * @see docs/API.md for contract and lifecycle.
  */
+export { VERSION } from './version.js';
 export * from './types.js';
 export type { SettingsStorageAdapter } from './storage.js';
 export { getDefaultForDefinition, getOptionValues, validateSchema } from './validation.js';
