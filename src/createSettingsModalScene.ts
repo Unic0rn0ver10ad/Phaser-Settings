@@ -163,15 +163,17 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
         this.applyScroll(dy);
       });
 
-      // Touch/drag scrolling: zone over list area so touch drag scrolls the list
-      const scrollZoneCenterX = this.settingsListX + listWidth / 2;
-      const scrollZoneCenterY = this.settingsListYBase + this.viewportHeight / 2;
-      const scrollZone = this.add
-        .zone(scrollZoneCenterX, scrollZoneCenterY, listWidth, this.viewportHeight)
-        .setInteractive(new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight), Phaser.Geom.Rectangle.Contains);
-      scrollZone.setDepth(2.5);
+      // Touch/drag scrolling: use scene-level pointer events with list bounds so touch always works
+      // (a zone on top can miss touches on some devices; bounds check is reliable)
+      const listLeft = this.settingsListX;
+      const listTop = this.settingsListYBase;
+      const listRight = listLeft + listWidth;
+      const listBottom = listTop + this.viewportHeight;
+      const isInListBounds = (x: number, y: number) =>
+        x >= listLeft && x <= listRight && y >= listTop && y <= listBottom;
 
-      scrollZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        if (!isInListBounds(pointer.x, pointer.y)) return;
         this.scrollDrag = {
           startY: pointer.y,
           startScrollY: this.scrollY,
@@ -196,25 +198,11 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
 
       const clearScrollDrag = (pointer: Phaser.Input.Pointer) => {
         if (!this.scrollDrag || pointer.id !== this.scrollDrag.pointerId) return;
-        if (!this.scrollDrag.didDrag) {
-          scrollZone.disableInteractive();
-          const hits = this.input.hitTestPointer(pointer).filter((o) => o !== scrollZone);
-          scrollZone.setInteractive(
-            new Phaser.Geom.Rectangle(-listWidth / 2, -this.viewportHeight / 2, listWidth, this.viewportHeight),
-            Phaser.Geom.Rectangle.Contains
-          );
-          if (hits.length > 0) {
-            const target = hits[0];
-            target.emit('pointerdown', pointer);
-            target.emit('pointerup', pointer);
-          }
-        }
         this.scrollDrag = null;
       };
 
-      scrollZone.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
-      scrollZone.on('pointerout', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
       this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+      this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
 
       const keys = this.input.keyboard?.addKeys('UP,DOWN,ESC');
       if (keys && 'UP' in keys && 'DOWN' in keys && 'ESC' in keys) {
