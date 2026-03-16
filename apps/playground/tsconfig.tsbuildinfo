@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/controls/controlspanel.tsx","./src/phaser/gameconfig.ts","./src/phaser/scenes/playgroundscene.ts","./src/settings/testsettingsconfig.ts","./test/settings-config.test.ts"],"version":"5.6.3"}

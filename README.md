@@ -85,6 +85,15 @@ this.scene.launch('SettingsScene');
 - `npm run test` — Vitest (manager unit tests)
 - `npm run build` — output in `dist/`
 
+### Local playground (dev only)
+
+A React + Phaser playground in `apps/playground` lets you manually test phaser-settings (including touch controls) in a consumer-like setup. It is **not** included in the published package (`npm run verify:pack` checks this).
+
+- `npm run dev:playground` — build library, install deps, start Vite dev server (one command)
+- `npm run build:playground` — build library and playground for production
+- `npm run test:playground` — run playground unit tests
+- `npm run verify:pack` — assert publish payload excludes `apps/playground` (run before `npm publish`)
+
 ## Integrating with your Game
 
 - `npm run check`, `npm run lint`, `npm run build`
@@ -116,6 +125,10 @@ For local development use `"phaser-settings": "file:./packages/phaser-settings"`
 - **Storage**: `SettingsStorageAdapter` interface.
 - **Manager**: `SettingsManager.create()`, `getInstance()`, `resetForTests()`, `isInitialized()`; instance methods `get`, `set`, `resetToDefaults`, `subscribe`, `onApplySetting`, etc.
 - **UI**: `defaultSettingsTheme`, `renderSettingsList()`, `createSettingsModalScene()`.
+
+## Publish checklist
+
+Before `npm publish`, run `npm run verify:pack`. It runs `npm pack --dry-run` and fails if any `apps/playground` files appear in the tarball. The package already uses `files` allowlisting (`dist`, `README.md`, `docs`), so the playground is excluded by default; this script is an extra guardrail.
 
 ## Versioning
 

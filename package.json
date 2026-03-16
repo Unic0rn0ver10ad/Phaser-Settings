@@ -16,7 +16,11 @@
     "build": "node scripts/inject-version.cjs && tsc",
     "check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev:playground": "npm run build && npm install --prefix apps/playground && npm run dev --prefix apps/playground",
+    "build:playground": "npm run build && npm run build --prefix apps/playground",
+    "test:playground": "npm run test --prefix apps/playground",
+    "verify:pack": "node scripts/verify-pack.cjs"
   },
   "peerDependencies": {
     "phaser": "^3.60.0"

@@ -22,6 +22,7 @@ export function createSliderControl(
   let current = Math.max(slider.min, Math.min(slider.max, Number.isNaN(numVal) ? slider.min : numVal));
   let pct = range === 0 ? 0 : (current - slider.min) / range;
   let dragging = false;
+  let dragPointerId: number | null = null;
 
   const trackBg = scene.add.graphics();
   const trackFill = scene.add.graphics();
@@ -58,18 +59,28 @@ export function createSliderControl(
     onChange(current);
   }
 
+  const endDrag = () => {
+    if (dragging) scene.events.emit('settings:scrollUnblock');
+    dragging = false;
+    dragPointerId = null;
+  };
+
   const zone = scene.add.zone(trackWidth / 2, theme.controlHeight / 2, trackWidth, theme.controlHeight)
     .setInteractive({ useHandCursor: true });
   if (!disabled) {
     zone.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
       dragging = true;
+      dragPointerId = ptr.id;
+      scene.events.emit('settings:scrollBlock');
       applyPointer(ptr.x);
     });
+    zone.on('pointerup', endDrag);
+    zone.on('pointerout', endDrag);
     scene.input.on('pointermove', (ptr: Phaser.Input.Pointer) => {
-      if (dragging) applyPointer(ptr.x);
+      if (dragging && dragPointerId !== null && ptr.id === dragPointerId) applyPointer(ptr.x);
     });
-    scene.input.on('pointerup', () => {
-      dragging = false;
+    scene.input.on('pointerup', (ptr: Phaser.Input.Pointer) => {
+      if (dragging && (dragPointerId === null || ptr.id === dragPointerId)) endDrag();
     });
   }
 
