@@ -14,6 +14,7 @@
   "files": ["dist", "README.md", "docs", "AGENTS.md", "PUBLIC_API.md"],
   "scripts": {
     "build": "node scripts/inject-version.cjs && tsc",
+    "postinstall": "npm run build",
     "check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",

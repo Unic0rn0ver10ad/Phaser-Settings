@@ -85,7 +85,7 @@ Details for storage contract, error handling, and migrations: [docs/API.md](API.
 
 ## 6. Install from GitHub
 
-See [README — Install](../README.md#install). Use the tarball URL or Git HTTPS in `package.json`. After install, run `npm run build` in the package (or use a postinstall script) so `dist/` exists. The package does not ship built files from every branch; consumers typically depend on a tag or a built artifact.
+See [README — Install](../README.md#install). Use the tarball URL or Git HTTPS in `package.json`. After install, a **postinstall** script runs `npm run build` so `dist/` exists. If you use `npm install --omit=dev`, postinstall may fail (no TypeScript); run `npm run build` from the package directory after install. The package does not ship built files from every branch; consumers typically depend on a tag or a built artifact.
 
 ---
 
@@ -97,7 +97,15 @@ Before using the package (or after pulling updates), build it from the repo root
 npm run build
 ```
 
-This produces `dist/`. Consuming apps must have a built package (or rely on your publish pipeline).
+This produces `dist/`. Postinstall runs this automatically on install; consuming apps must have a built package (or rely on your publish pipeline).
+
+### Troubleshooting: "Failed to resolve entry for package phaser-settings"
+
+The bundler or dev server cannot find `dist/index.js`. Usually `dist/` is missing because the package was never built after install.
+
+- **Normal install:** Postinstall should have run; if it was skipped or failed, run `npm run build` from the phaser-settings package root (e.g. from this repo, or `cd node_modules/phaser-settings && npm run build` in your app).
+- **Production/CI** (`npm install --omit=dev`): DevDependencies (TypeScript) may be omitted, so postinstall cannot build. Run `npm run build` in the phaser-settings package before starting the dev server, or avoid `--omit=dev` for local development.
+- **From npm:** Published tarballs include `dist/`; no extra step needed.
 
 ---
 

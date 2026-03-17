@@ -30,9 +30,17 @@ npm install https://github.com/Unic0rn0ver10ad/Phaser-Settings.git
 
 In `package.json` use the same URL (tarball or .git). If you see SSH or Windows dofork errors, use the tarball URL or run `git config --global url."https://github.com/".insteadOf ssh://git@github.com/`. See [docs/INTEGRATION.md](docs/INTEGRATION.md#1-install-from-github).
 
-Then run `npm install`. The package must be built before use (see [Integration guide](docs/INTEGRATION.md#build)).
+Then run `npm install`. A postinstall script builds the package so `dist/` exists. If you install with `--omit=dev`, run `npm run build` from the package root (or from `node_modules/phaser-settings`) after install.
 
 **Peer dependency:** `phaser` ^3.60.0.
+
+### Troubleshooting: "Failed to resolve entry for package phaser-settings"
+
+This usually means the package was installed without built output (`dist/` missing). Fix it by:
+
+- **Normal install:** Postinstall runs automatically; if it was skipped or failed, run `npm run build` from this repo root (or `cd node_modules/phaser-settings && npm run build` in your app).
+- **Production/CI** (`npm install --omit=dev`): The package’s devDependencies (TypeScript) may not be installed, so postinstall cannot build. Run `npm run build` in the phaser-settings package before starting your dev server, or install without `--omit=dev` for local development.
+- **From npm:** Published tarballs include `dist/`; no extra step needed.
 
 ## Quick start
 
