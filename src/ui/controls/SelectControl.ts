@@ -23,7 +23,7 @@ export function createSelectControl(
   const text = scene.add.text(8, theme.controlHeight / 2, String(selectedOption.label), {
     fontSize: theme.labelFontSize,
     color: TEXT_COLOR,
-    fontFamily: 'monospace',
+    fontFamily: theme.controlFontFamily ?? theme.fontFamily ?? 'monospace',
     wordWrap: { width: controlWidth - 32 },
   }).setOrigin(0, 0.5);
 
@@ -82,7 +82,7 @@ export function createSelectControl(
         const optText = scene.add.text(8, optY + OPTION_HEIGHT / 2, opt.label, {
           fontSize: theme.helpFontSize,
           color: opt.value === value ? '#4fc3f7' : TEXT_COLOR,
-          fontFamily: 'monospace',
+          fontFamily: theme.controlFontFamily ?? theme.fontFamily ?? 'monospace',
         }).setOrigin(0, 0.5);
         dropdownContainer!.add(optText);
         dropdownHitSet.add(optText);

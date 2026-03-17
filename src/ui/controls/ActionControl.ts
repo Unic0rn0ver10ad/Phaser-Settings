@@ -18,7 +18,7 @@ export function createActionControl(
   const text = scene.add.text(w / 2, h / 2, definition.actionLabel, {
     fontSize: theme.labelFontSize,
     color: '#ffffff',
-    fontFamily: 'monospace',
+    fontFamily: theme.controlFontFamily ?? theme.fontFamily ?? 'monospace',
   }).setOrigin(0.5);
 
   let isHover = false;

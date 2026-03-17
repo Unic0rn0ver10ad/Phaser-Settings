@@ -66,7 +66,7 @@ These are the only sanctioned ways to customize behavior. Use them instead of wr
 | `migrate(loaded, fromVersion, toVersion)` | `SettingsManager.create({ … })` | Transform loaded data when `schema.version` changes. |
 | `onAction({ settingId, manager, scene, requestClose })` | `createSettingsModalScene({ … })` | Handle action buttons (e.g. restore defaults, delete save). App does confirmation and navigation. |
 | `onClose(scene)` | `createSettingsModalScene({ … })` | Called when modal is closed (ESC, click outside, X). |
-| `theme` | `createSettingsModalScene({ … })` | Override layout/colors for the modal list. |
+| `theme` | `createSettingsModalScene({ … })` | Override layout/colors and typography for the modal list. Optional font-family fields (`fontFamily`, `titleFontFamily`, `labelFontFamily`, etc.) let the app control typefaces; the app is responsible for loading fonts before opening the settings scene (or accepts a brief fallback flash). |
 
 If your app needs behavior not supported by the package, **propose or add an API or extension point in the shared package** rather than patching or wrapping in the app.
 

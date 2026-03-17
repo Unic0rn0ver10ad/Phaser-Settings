@@ -8,6 +8,7 @@ import {
 } from 'phaser-settings';
 import { getGameConfig } from './phaser/gameConfig';
 import settingsSchemaJson from './settings.json';
+import { APP_FONT_FAMILY } from './appTheme';
 
 const settingsSchema = settingsSchemaJson as SettingsSchema;
 
@@ -48,6 +49,7 @@ export default function App() {
     const SettingsScene = createSettingsModalScene({
       manager: settingsManager,
       title: 'SETTINGS',
+      theme: { fontFamily: APP_FONT_FAMILY },
       onAction({ settingId, manager: m, scene, requestClose }) {
         const def = m.getSchema().definitions.find((d) => d.id === settingId);
         const label =
@@ -66,7 +68,7 @@ export default function App() {
         }
         requestClose();
       },
-      onClose() {},
+      onClose(_scene) {},
     });
 
     const config = getGameConfig(containerRef.current, [SettingsScene]);

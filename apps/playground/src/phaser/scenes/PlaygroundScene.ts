@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SettingsManager } from 'phaser-settings';
 import type { SettingDefinition, SettingValue } from 'phaser-settings';
+import { APP_FONT_FAMILY } from '../../appTheme';
 
 const SCENE_KEY = 'PlaygroundScene';
 const SETTINGS_SCENE_KEY = 'SettingsScene';
@@ -36,7 +37,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(width / 2, 28, 'Phaser Settings Playground App', {
         fontSize: '22px',
         color: TITLE_COLOR,
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
       })
       .setOrigin(0.5);
 
@@ -44,7 +45,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(width / 2, 58, 'The right side shows live values from settings. Use the menu to open Settings.', {
         fontSize: '14px',
         color: '#8b9dc3',
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
         align: 'center',
         wordWrap: { width: width - 48 },
       })
@@ -93,7 +94,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(gameLeft + gameWidth / 2, gameTop + gameHeight / 2, 'GAME', {
         fontSize: '18px',
         color: '#000000',
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
       })
       .setOrigin(0.5);
 
@@ -106,7 +107,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(rightCenterX, rightCenterY - 80, 'Live values from settings', {
         fontSize: '14px',
         color: TITLE_COLOR,
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
       })
       .setOrigin(0.5, 0.5);
 
@@ -114,7 +115,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(rightCenterX, rightCenterY, '', {
         fontSize: '12px',
         color: '#a0aec0',
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
         align: 'center',
         lineSpacing: 4,
         wordWrap: { width: rightPanelWidth - 16 },
@@ -125,7 +126,7 @@ export class PlaygroundScene extends Phaser.Scene {
       .text(rightCenterX, rightCenterY + 100, '', {
         fontSize: '12px',
         color: '#4fc3f7',
-        fontFamily: 'monospace',
+        fontFamily: APP_FONT_FAMILY,
         align: 'center',
         wordWrap: { width: rightPanelWidth - 16 },
       })

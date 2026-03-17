@@ -11,7 +11,7 @@ export function createSectionHeader(
   const label = scene.add.text(theme.paddingHorizontal, theme.sectionHeaderHeight / 2, definition.label, {
     fontSize: theme.sectionHeaderFontSize,
     color: theme.sectionHeaderColor,
-    fontFamily: 'monospace',
+    fontFamily: theme.sectionHeaderFontFamily ?? theme.fontFamily ?? 'monospace',
   }).setOrigin(0, 0.5);
 
   if (theme.sectionBackgroundColor !== undefined) {

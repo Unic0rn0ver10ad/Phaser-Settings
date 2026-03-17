@@ -31,7 +31,7 @@ Single source of truth for **exported symbols** is [src/index.ts](src/index.ts).
 | `SettingDefinition` | Union of all definition types. |
 | `SettingCategory` | `{ id, label, order? }`. |
 | `SettingsSchema` | `{ categories, definitions, version? }`. |
-| `SettingsTheme` | Theme fields for layout and colors (rowHeight, font sizes, etc.). |
+| `SettingsTheme` | Theme fields for layout, colors, and optional font families (rowHeight, font sizes, `fontFamily`, `titleFontFamily`, `labelFontFamily`, `helpFontFamily`, `sectionHeaderFontFamily`, `controlFontFamily`, `versionFontFamily`). Apps load fonts and pass families via theme; the library uses neutral fallbacks when unset. |
 
 ### Storage
 

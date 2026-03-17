@@ -28,7 +28,7 @@ export function createSliderControl(
   const valueText = scene.add.text(trackWidth + 8, theme.controlHeight / 2, formatSliderValue(current, slider.suffix), {
     fontSize: theme.helpFontSize,
     color: theme.helpColor,
-    fontFamily: 'monospace',
+    fontFamily: theme.controlFontFamily ?? theme.fontFamily ?? 'monospace',
   }).setOrigin(0, 0.5);
 
   function draw() {

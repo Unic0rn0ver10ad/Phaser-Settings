@@ -16,4 +16,5 @@ export const defaultSettingsTheme: SettingsTheme = {
   controlHeight: 40,
   rowBackgroundColor: 0x1a1a2e,
   sectionBackgroundColor: 0x16213e,
+  fontFamily: 'monospace',
 };

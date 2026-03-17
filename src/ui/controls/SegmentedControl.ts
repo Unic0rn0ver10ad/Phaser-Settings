@@ -47,7 +47,7 @@ export function createSegmentedControl(
       i * (segmentWidth + gap) + segmentWidth / 2,
       theme.controlHeight / 2,
       opt.label,
-      { fontSize: theme.helpFontSize, color: theme.helpColor, fontFamily: 'monospace' }
+      { fontSize: theme.helpFontSize, color: theme.helpColor, fontFamily: theme.controlFontFamily ?? theme.fontFamily ?? 'monospace' }
     ).setOrigin(0.5);
 
     const update = (active: boolean, hover: boolean) => {

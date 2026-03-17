@@ -139,4 +139,12 @@ export interface SettingsTheme {
   controlHeight: number;
   rowBackgroundColor?: number;
   sectionBackgroundColor?: number;
+  /** Optional font families. App loads fonts and passes via theme; library uses fallbacks when unset. */
+  fontFamily?: string;
+  titleFontFamily?: string;
+  labelFontFamily?: string;
+  helpFontFamily?: string;
+  sectionHeaderFontFamily?: string;
+  controlFontFamily?: string;
+  versionFontFamily?: string;
 }

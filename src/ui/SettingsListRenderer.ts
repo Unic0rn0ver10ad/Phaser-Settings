@@ -69,7 +69,7 @@ export function renderSettingsList(options: SettingsListRendererOptions): {
     const label = scene.add.text(theme.paddingHorizontal, theme.rowHeight / 2, def.label, {
       fontSize: theme.labelFontSize,
       color: disabled ? theme.helpColor : theme.labelColor,
-      fontFamily: 'monospace',
+      fontFamily: theme.labelFontFamily ?? theme.fontFamily ?? 'monospace',
       wordWrap: { width: labelWidth },
     }).setOrigin(0, 0.5);
     rowContainer.add(label);
@@ -131,7 +131,7 @@ export function renderSettingsList(options: SettingsListRendererOptions): {
       const helpText = scene.add.text(theme.paddingHorizontal, theme.rowHeight + 4, def.help, {
         fontSize: theme.helpFontSize,
         color: theme.helpColor,
-        fontFamily: 'monospace',
+        fontFamily: theme.helpFontFamily ?? theme.fontFamily ?? 'monospace',
         wordWrap: { width: labelWidth + controlWidth },
       }).setOrigin(0, 0);
       rowContainer.add(helpText);

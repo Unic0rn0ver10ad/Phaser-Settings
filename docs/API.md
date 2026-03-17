@@ -13,7 +13,7 @@
 - **Validation**: `getDefaultForDefinition(def)`, `getOptionValues(def)`, `validateSchema(schema)` (dev).
 - **Manager**: `SettingsManager.create(options)`, `SettingsManager.getInstance()`, `SettingsManager.resetForTests()`, `isInitialized()`; instance methods: `getSchema()`, `get(id)`, `getOrDefault(id)`, `set(id, value)`, `resetToDefaults()`, `isVisible(def)`, `isEnabled(def)`, `subscribe(cb)`, `onApply(cb)`, `onApplySetting(id, cb)`.
 - **UI**: `defaultSettingsTheme`, `renderSettingsList(options)`, `createSettingsModalScene(options)`.
-- **Scene factory options**: `schema`, `storage` or `manager`, `theme?`, `bounds?` (`{ x, y, width, height }` to confine modal to a rectangle), `onAction?(args)`, `onClose?()`. Bounds can also be passed at launch: `scene.launch('SettingsScene', { bounds })`.
+- **Scene factory options**: `schema`, `storage` or `manager`, `theme?`, `bounds?` (`{ x, y, width, height }` to confine modal to a rectangle), `onAction?(args)`, `onClose?()`. Bounds can also be passed at launch: `scene.launch('SettingsScene', { bounds })`. Theme may include optional font-family keys (`fontFamily`, `titleFontFamily`, `labelFontFamily`, `helpFontFamily`, `sectionHeaderFontFamily`, `controlFontFamily`, `versionFontFamily`); the app owns font loading and passes families via theme.
 
 ## Unsupported (0.x)
 

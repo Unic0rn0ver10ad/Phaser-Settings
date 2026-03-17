@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import type { SettingsManager } from './SettingsManager.js';
 import type { SettingsTheme } from './types.js';
+import { defaultSettingsTheme } from './ui/SettingsTheme.js';
 import { renderSettingsList } from './ui/SettingsListRenderer.js';
 import type { RenderedRow } from './ui/SettingsListRenderer.js';
 import { VERSION } from './version.js';
@@ -87,6 +88,7 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
     }
 
     create() {
+      const theme: SettingsTheme = { ...defaultSettingsTheme, ...opts.theme };
       const b = opts.bounds ?? this.launchBounds;
       const W = b ? b.width : this.scale.width;
       const H = b ? b.height : this.scale.height;
@@ -139,7 +141,7 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       this.add.text(panelLeft + contentWidth / 2, titleY, title, {
         fontSize: W < 400 ? '22px' : '26px',
         color: '#4fc3f7',
-        fontFamily: 'monospace',
+        fontFamily: theme.titleFontFamily ?? theme.fontFamily ?? 'monospace',
       }).setOrigin(0.5).setDepth(2);
 
       const closeX = panelLeft + panelWidth - MODAL_BORDER - CLOSE_BUTTON_INSET - CLOSE_BUTTON_SIZE / 2;
@@ -176,7 +178,7 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       const versionText = this.add.text(0, 0, versionLabel, {
         fontSize: '12px',
         color: '#6b7a99',
-        fontFamily: 'monospace',
+        fontFamily: theme.versionFontFamily ?? theme.fontFamily ?? 'monospace',
       }).setOrigin(0.5);
       this.versionContainer = this.add.container(0, 0);
       this.versionContainer.add(versionText);

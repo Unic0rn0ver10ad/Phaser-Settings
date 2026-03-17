@@ -70,4 +70,16 @@ describe('public API contract', () => {
     expect(typeof renderSettingsList).toBe('function');
   });
 
+  describe('defaultSettingsTheme (theme font contract)', () => {
+    it('includes fontFamily fallback so merged theme has a safe default', () => {
+      expect(defaultSettingsTheme.fontFamily).toBe('monospace');
+    });
+
+    it('satisfies SettingsTheme (required layout/size/color fields present)', () => {
+      const theme = defaultSettingsTheme as SettingsTheme;
+      expect(theme.rowHeight).toBeDefined();
+      expect(theme.labelFontSize).toBeDefined();
+      expect(theme.controlHeight).toBeDefined();
+    });
+  });
 });
