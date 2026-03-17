@@ -202,7 +202,9 @@ export function createSettingsModalScene(options: CreateSettingsModalSceneOption
       };
 
       this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+      this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
       this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => clearScrollDrag(pointer));
+      this.input.on('gameout', () => { this.scrollDrag = null; });
 
       const keys = this.input.keyboard?.addKeys('UP,DOWN,ESC');
       if (keys && 'UP' in keys && 'DOWN' in keys && 'ESC' in keys) {

@@ -22,6 +22,7 @@ export function createSliderControl(
   let current = Math.max(slider.min, Math.min(slider.max, Number.isNaN(numVal) ? slider.min : numVal));
   let pct = range === 0 ? 0 : (current - slider.min) / range;
   let dragging = false;
+  let activePointerId: number | null = null;
 
   const trackBg = scene.add.graphics();
   const trackFill = scene.add.graphics();
@@ -60,20 +61,45 @@ export function createSliderControl(
 
   const zone = scene.add.zone(trackWidth / 2, theme.controlHeight / 2, trackWidth, theme.controlHeight)
     .setInteractive({ useHandCursor: true });
+  const container = scene.add.container(0, 0, [trackBg, trackFill, thumb, valueText, zone]);
+
   if (!disabled) {
-    zone.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
+    const onPointerDown = (ptr: Phaser.Input.Pointer) => {
       dragging = true;
+      activePointerId = ptr.id;
       applyPointer(ptr.x);
-    });
-    scene.input.on('pointermove', (ptr: Phaser.Input.Pointer) => {
-      if (dragging) applyPointer(ptr.x);
-    });
-    scene.input.on('pointerup', () => {
+    };
+
+    const onPointerMove = (ptr: Phaser.Input.Pointer) => {
+      if (!dragging || activePointerId !== ptr.id) return;
+      applyPointer(ptr.x);
+    };
+
+    const stopDrag = (ptr?: Phaser.Input.Pointer) => {
+      if (ptr && activePointerId !== ptr.id) return;
       dragging = false;
+      activePointerId = null;
+    };
+
+    const onGameOut = () => stopDrag();
+
+    zone.on('pointerdown', onPointerDown);
+    scene.input.on('pointermove', onPointerMove);
+    scene.input.on('pointerup', stopDrag);
+    scene.input.on('pointerupoutside', stopDrag);
+    scene.input.on('pointerout', stopDrag);
+    scene.input.on('gameout', onGameOut);
+
+    container.once(Phaser.GameObjects.Events.DESTROY, () => {
+      zone.off('pointerdown', onPointerDown);
+      scene.input.off('pointermove', onPointerMove);
+      scene.input.off('pointerup', stopDrag);
+      scene.input.off('pointerupoutside', stopDrag);
+      scene.input.off('pointerout', stopDrag);
+      scene.input.off('gameout', onGameOut);
     });
   }
 
-  const container = scene.add.container(0, 0, [trackBg, trackFill, thumb, valueText, zone]);
   return { container, focusTarget: zone };
 }
 
