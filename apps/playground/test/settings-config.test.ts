@@ -44,4 +44,27 @@ describe('playground settings config', () => {
       }
     }
   });
+
+  it('every select and segmented has non-empty options', () => {
+    for (const def of definitions) {
+      if (def.type === 'select' || def.type === 'segmented') {
+        expect(Array.isArray(def.options)).toBe(true);
+        expect(def.options.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('every select/segmented default is one of options values', () => {
+    for (const def of definitions) {
+      if (def.type === 'select' || def.type === 'segmented') {
+        const values = def.options.map((o: { value: unknown }) => o.value);
+        expect(values).toContain(def.default);
+      }
+    }
+  });
+
+  it('every definition id is unique', () => {
+    const ids = definitions.map((d: { id: string }) => d.id);
+    expect(ids.length).toBe(new Set(ids).size);
+  });
 });
